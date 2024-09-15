@@ -17,9 +17,9 @@ return new class extends Migration
             $table->string('title');
             $table->text('description');
             $table->date('due_date');
-            $table->boolean('completed')->default(false);
+            $table->string('status')->default('pending');
             $table->string('category');
-            $table->enum('priority', ['low', 'medium', 'high'])->default('medium');
+            $table->string('priority')->default('low');
             $table->integer('progress')->default(0);
             $table->timestamps();
         });

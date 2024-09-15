@@ -29,6 +29,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/goals', [GoalController::class, 'index'])->name('goals.index');
     Route::post('/goals', [GoalController::class, 'store'])->name('goals.store');
+    Route::get('/goals/{id}', [GoalController::class, 'show'])->name('goals.show');
+    Route::put('goals/{goal}', [GoalController::class, 'update'])->name('goals.update');
+    Route::delete('goals/{goal}', [GoalController::class, 'destroy'])->name('goals.destroy');
     Route::get('/roadmaps', [AIRoadmapController::class, 'index'])->name('roadmaps.index');
     Route::get('/resources', [ResourceController::class, 'index'])->name('resources.index');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

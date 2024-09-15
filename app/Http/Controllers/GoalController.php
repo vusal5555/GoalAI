@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreGoalRequest;
+use App\Http\Requests\UpdateGoalRequest;
+use App\Http\Resources\GoalResource;
 use App\Models\Goal;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class GoalController extends Controller
@@ -13,59 +16,58 @@ class GoalController extends Controller
      */
     public function index()
     {
-        return Inertia::render('Goals/Index');
+
+        $goals = Goal::where('user_id', Auth::id())->get();
+
+        // Extract unique categories on the backend
+        $categories = $goals->pluck('category')->unique()->values();
+
+        return Inertia::render('Goals/Index', [
+            'goals' => GoalResource::collection($goals),
+            'categories' => $categories,
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreGoalRequest $request)
     {
 
-        // Validate the incoming request with all necessary fields
-        $validatedData = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'due_date' => 'required|date|after:today', // Ensure due date is in the future
-            'category' => 'required|string|max:255',
-        ]);
+        $data = $request->validated();
 
-        // Create a new Goal instance and save it
-        $goal = new Goal;
-        $goal->title = $validatedData['title'];
-        $goal->description = $validatedData['description'];
-        $goal->due_date = $validatedData['due_date'];
-        $goal->category = $validatedData['category'];
+        $data['user_id'] = Auth::id();
 
-        // Associate the goal with the currently authenticated user (if applicable)
-        $goal->user_id = auth()->id(); // Assuming user_id column exists in goals table
+        Goal::create($data);
 
-        $goal->save();
+        return to_route('goals.index')->with('success', 'Goal created successfully');
 
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Goal $goal)
+    public function show($id)
     {
-        //
-    }
+        $goal = Goal::findOrFail($id);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Goal $goal)
-    {
-        //
+        return response()->json($goal);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Goal $goal)
+    public function update(UpdateGoalRequest $request, Goal $goal)
     {
-        //
+        if ($goal->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $data = $request->validated();
+        $data['user_id'] = Auth::id();
+        $goal->update($data);
+
+        return to_route('goals.index')->with('success', 'Goal updated successfully');
     }
 
     /**
@@ -73,6 +75,12 @@ class GoalController extends Controller
      */
     public function destroy(Goal $goal)
     {
-        //
+        // Ensure this is the correct goal instance
+        if ($goal->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        $goal->delete();
+
+        return to_route('goals.index')->with('success', 'Goal deleted successfully');
     }
 }

@@ -9,6 +9,16 @@ class Goal extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'title',
+        'description',
+        'due_date',
+        'priority',
+        'status',
+        'category',
+        'user_id',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

@@ -7,7 +7,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/Components/ui/dialog";
-
 import {
   Popover,
   PopoverTrigger,
@@ -15,19 +14,21 @@ import {
 } from "@/Components/ui/popover";
 import { Calendar } from "@/Components/ui/calendar";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Link2 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import { Link, useForm } from "@inertiajs/react";
+import { faPlus, faEdit } from "@fortawesome/free-solid-svg-icons";
+import { useForm } from "@inertiajs/react";
 import TextInput from "./TextInput";
 import InputLabel from "./InputLabel";
 import InputError from "./InputError";
 import TextAreaInput from "./TextAreaInput";
 import SelectInput from "./SelectInput";
 import uppercaseFirstLetterLowerCaseTheRest from "@/utils/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 interface GoalFormData {
+  user_id: number | null;
   title: string;
   description: string;
   due_date: string;
@@ -36,10 +37,13 @@ interface GoalFormData {
   category: string;
 }
 
-const GoalCreationDialog: React.FC = () => {
+const GoalEditionDialog: React.FC<{ id: number }> = ({ id }) => {
+  const [open, setOpen] = useState(false);
+
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const { data, setData, post, reset, errors, processing } =
+  const { data, setData, put, reset, errors, processing } =
     useForm<GoalFormData>({
+      user_id: null,
       title: "",
       description: "",
       due_date: "",
@@ -48,34 +52,68 @@ const GoalCreationDialog: React.FC = () => {
       category: "",
     });
 
+  const getGoal = () => {
+    axios
+      .get(`/goals/${id}`)
+      .then((response) => {
+        const goal = response.data;
+
+        setData({
+          user_id: goal.user_id,
+          title: goal.title,
+          description: goal.description,
+          due_date: goal.due_date,
+          priority: goal.priority,
+          status: goal.status,
+          category: goal.category,
+        });
+      })
+      .catch((error) => {
+        console.error("Error fetching goal:", error);
+      });
+  };
+
+  useEffect(() => {
+    getGoal();
+  }, []);
+
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    data.title = uppercaseFirstLetterLowerCaseTheRest(data.title);
+    const updatedData = {
+      ...data,
+      title: uppercaseFirstLetterLowerCaseTheRest(data.title),
+      description: uppercaseFirstLetterLowerCaseTheRest(data.description),
+      category: uppercaseFirstLetterLowerCaseTheRest(data.category),
+    };
 
-    data.description = uppercaseFirstLetterLowerCaseTheRest(data.description);
-
-    data.category = uppercaseFirstLetterLowerCaseTheRest(data.category);
-
-    post(route("goals.store"));
-    reset();
+    put(route("goals.update", { goal: id }), {
+      data: updatedData,
+      onSuccess: () => {
+        setOpen(false);
+      },
+    });
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="w-0">
-          <FontAwesomeIcon className="text-xl" icon={faPlus} />
+        <Button
+          variant="ghost"
+          className="w-0 p-0"
+          onClick={() => setOpen(true)}
+        >
+          <FontAwesomeIcon className="text-xl" icon={faEdit} />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader className="flex flex-col">
-          <DialogTitle>Set a Goal</DialogTitle>
-          <DialogDescription>Create your goal here!</DialogDescription>
+          <DialogTitle>Edit Goal</DialogTitle>
+          <DialogDescription>Edit your goal here!</DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit}>
           <div className="mt-4">
-            <InputLabel htmlFor="goal_title" value="Goal Title"></InputLabel>
+            <InputLabel htmlFor="goal_title" value="Goal Title" />
             <TextInput
               id="goal_title"
               type="text"
@@ -83,43 +121,34 @@ const GoalCreationDialog: React.FC = () => {
               value={data.title}
               className="mt-1 block w-full bg-transparent"
               onChange={(e) => setData("title", e.target.value)}
-            ></TextInput>
-            <InputError message={errors.title} className="mt-2"></InputError>
+            />
+            <InputError message={errors.title} className="mt-2" />
           </div>
           <div className="mt-4 mb-4">
-            <InputLabel
-              htmlFor="goal_description"
-              value="Goal Description"
-            ></InputLabel>
+            <InputLabel htmlFor="goal_description" value="Goal Description" />
             <TextAreaInput
               id="goal_description"
               name="description"
               value={data.description}
               className="mt-1 block w-full bg-transparent"
               onChange={(e) => setData("description", e.target.value)}
-            ></TextAreaInput>
-            <InputError
-              message={errors.description}
-              className="mt-2"
-            ></InputError>
+            />
+            <InputError message={errors.description} className="mt-2" />
           </div>
           <div className="mt-4">
             <InputLabel htmlFor="goal_due_date" value="Goal Deadline" />
-
             <TextInput
               id="goal_due_date"
               type="date"
               value={data.due_date}
               name="due_date"
-              className="mt-1 block w-full bg-transparent"
+              className="mt-1 block w-full bg-transparent text-white"
               onChange={(e) => setData("due_date", e.target.value)}
             />
-
             <InputError message={errors.due_date} className="mt-2" />
           </div>
           <div className="mt-4">
-            <InputLabel htmlFor="goal_category" value="Goal Catgory" />
-
+            <InputLabel htmlFor="goal_category" value="Goal Category" />
             <TextInput
               id="goal_category"
               type="text"
@@ -128,16 +157,15 @@ const GoalCreationDialog: React.FC = () => {
               className="mt-1 block w-full bg-transparent"
               onChange={(e) => setData("category", e.target.value)}
             />
-
             <InputError message={errors.category} className="mt-2" />
           </div>
           <div className="mt-4">
             <InputLabel htmlFor="goal_status" value="Goal Status" />
-
             <SelectInput
               name="status"
               id="goal_status"
-              className="mt-1 block w-full bg-transparent"
+              value={data.status}
+              className="mt-1 block w-full bg-transparent "
               onChange={(e) => setData("status", e.target.value)}
             >
               <option value="">Select Status</option>
@@ -145,16 +173,14 @@ const GoalCreationDialog: React.FC = () => {
               <option value="in_progress">In Progress</option>
               <option value="completed">Completed</option>
             </SelectInput>
-
             <InputError message={errors.status} className="mt-2" />
           </div>
-
           <div className="mt-4">
             <InputLabel htmlFor="goal_priority" value="Goal Priority" />
-
             <SelectInput
               name="priority"
               id="goal_priority"
+              value={data.priority}
               className="mt-1 block w-full bg-transparent"
               onChange={(e) => setData("priority", e.target.value)}
             >
@@ -163,7 +189,6 @@ const GoalCreationDialog: React.FC = () => {
               <option value="medium">Medium</option>
               <option value="high">High</option>
             </SelectInput>
-
             <InputError message={errors.priority} className="mt-2" />
           </div>
           <div className="mt-4 text-right">
@@ -177,4 +202,4 @@ const GoalCreationDialog: React.FC = () => {
   );
 };
 
-export default GoalCreationDialog;
+export default GoalEditionDialog;
