@@ -6,6 +6,7 @@ use App\Http\Requests\StoreGoalRequest;
 use App\Http\Requests\UpdateGoalRequest;
 use App\Http\Resources\GoalResource;
 use App\Models\Goal;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -14,13 +15,28 @@ class GoalController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        // Get category and search term from the request
+        $category = $request->input('category', 'All');
+        $searchTerm = $request->input('search', '');
 
-        $goals = Goal::where('user_id', Auth::id())->paginate(6);
+        // Build the query with filters
+        $query = Goal::where('user_id', Auth::id());
 
-        // Extract unique categories on the backend
-        $categories = $goals->pluck('category')->unique()->values();
+        if ($category !== 'All') {
+            $query->where('category', $category);
+        }
+
+        if (!empty($searchTerm)) {
+            $query->where('title', 'like', '%' . $searchTerm . '%');
+        }
+
+        // Paginate the filtered goals
+        $goals = $query->paginate(6)->appends($request->query());
+
+        // Get all unique categories for the user
+        $categories = Goal::where('user_id', Auth::id())->pluck('category')->unique()->values();
 
         // Format pagination links
         $formattedLinks = collect($goals->linkCollection()->toArray())->map(function ($link) {
@@ -34,7 +50,11 @@ class GoalController extends Controller
         return Inertia::render('Goals/Index', [
             'goals' => GoalResource::collection($goals),
             'categories' => $categories,
-            'links' => $formattedLinks, // Pass formatted links to the front end
+            'links' => $formattedLinks,
+            'filters' => [
+                'category' => $category,
+                'search' => $searchTerm,
+            ],
         ]);
     }
 

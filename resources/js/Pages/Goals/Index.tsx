@@ -1,7 +1,7 @@
 import MainLayout from "@/Layouts/MainLayout";
 import { PageProps } from "@/types";
-import { Head, Link, router } from "@inertiajs/react";
-import { useEffect, useState } from "react";
+import { Head, router, usePage } from "@inertiajs/react";
+import { useState } from "react";
 import GoalEditionDialog from "@/Components/GoalEditionDialog";
 import { faRemove } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -30,28 +30,51 @@ interface Goal {
   progress: number;
 }
 
-type Goals = Goal[];
+const Index = ({
+  auth,
+  goals,
+  categories,
+  links,
+}: PageProps<{
+  goals: { data: Goal[] };
+  categories: string[];
+  links: LinkType[];
+}>) => {
+  const { filters } = usePage<{
+    filters: { category?: string; search?: string };
+  }>().props;
 
-const Index = ({ auth, goals, categories, links }: PageProps) => {
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState(
+    filters.category || "All"
+  );
+  const [searchTerm, setSearchTerm] = useState(filters.search || "");
 
-  const filteredGoals = (goals as { data: Goals }).data.filter((goal) => {
-    const inCategory =
-      selectedCategory === "All" || goal.category === selectedCategory;
-    const matchesSearch = goal.title
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    return inCategory && matchesSearch;
-  });
+  // Function to handle category changes
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    router.get(
+      route("goals.index"),
+      { category, search: searchTerm },
+      { preserveState: true, preserveScroll: true }
+    );
+  };
+
+  // Function to handle search term changes
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const searchValue = e.target.value;
+    setSearchTerm(searchValue);
+    router.get(
+      route("goals.index"),
+      { category: selectedCategory, search: searchValue },
+      { preserveState: true, preserveScroll: true }
+    );
+  };
+
+  const filteredGoals = goals.data;
 
   const deleteGoal = (id: number) => {
     router.delete(route("goals.destroy", { goal: id }));
   };
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" }); // Scroll smoothly to the top
-  }, [goals]); // Trigger scrolling when the goals (pagination) changes
 
   return (
     <>
@@ -71,11 +94,12 @@ const Index = ({ auth, goals, categories, links }: PageProps) => {
                       ? "bg-blue-500 text-white"
                       : "bg-primary-foreground text-gray-300"
                   } hover:bg-blue-600`}
-                  onClick={() => setSelectedCategory("All")}
+                  onClick={() => handleCategoryChange("All")}
                 >
                   All
                 </li>
-                {(categories as string[]).map((category: string) => (
+
+                {categories.map((category: string) => (
                   <li
                     key={category}
                     className={`cursor-pointer p-2 rounded-md ${
@@ -83,7 +107,7 @@ const Index = ({ auth, goals, categories, links }: PageProps) => {
                         ? "bg-blue-500 text-white"
                         : "bg-primary-foreground text-gray-300"
                     } hover:bg-blue-600`}
-                    onClick={() => setSelectedCategory(category)}
+                    onClick={() => handleCategoryChange(category)}
                   >
                     {category}
                   </li>
@@ -100,7 +124,7 @@ const Index = ({ auth, goals, categories, links }: PageProps) => {
                   className="p-3 w-full rounded-md bg-primary-foreground text-white focus:outline-none"
                   placeholder="Search goals..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={handleSearchChange}
                 />
               </div>
 
@@ -126,9 +150,7 @@ const Index = ({ auth, goals, categories, links }: PageProps) => {
                           <GoalEditionDialog id={goal.id} />
                           <Button
                             variant="ghost"
-                            onClick={() => {
-                              deleteGoal(goal.id);
-                            }}
+                            onClick={() => deleteGoal(goal.id)}
                             className="p-0"
                           >
                             <FontAwesomeIcon
@@ -188,7 +210,7 @@ const Index = ({ auth, goals, categories, links }: PageProps) => {
 
           {/* Pagination */}
           <div>
-            <Pagination links={links as LinkType[]}></Pagination>
+            <Pagination links={links}></Pagination>
           </div>
         </div>
       </MainLayout>

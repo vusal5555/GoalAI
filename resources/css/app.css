@@ -68,14 +68,7 @@
     }
 }
 
-/* For WebKit browsers (Chrome, Safari) */
-.custom-date-input::-webkit-calendar-picker-indicator {
-    background: transparent;
-    color: white;
-}
-
-/* For Mozilla Firefox */
-.custom-date-input::-moz-calendar-picker-indicator {
-    background: transparent;
-    color: white;
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1); /* This inverts the color to white */
+    cursor: pointer;
 }
