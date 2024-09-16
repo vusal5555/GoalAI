@@ -1,11 +1,12 @@
 import MainLayout from "@/Layouts/MainLayout";
 import { PageProps } from "@/types";
 import { Head, Link, router } from "@inertiajs/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import GoalEditionDialog from "@/Components/GoalEditionDialog";
 import { faRemove } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button } from "@/Components/ui/button";
+import Pagination, { LinkType } from "@/Components/Pagination";
 
 interface User {
   id: number;
@@ -31,8 +32,7 @@ interface Goal {
 
 type Goals = Goal[];
 
-const Index = ({ auth, goals, categories }: PageProps) => {
-  console.log(auth.user.id);
+const Index = ({ auth, goals, categories, links }: PageProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchTerm, setSearchTerm] = useState<string>("");
 
@@ -49,6 +49,10 @@ const Index = ({ auth, goals, categories }: PageProps) => {
   const deleteGoal = (id: number) => {
     router.delete(route("goals.destroy", { goal: id }));
   };
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" }); // Scroll smoothly to the top
+  }, [goals]); // Trigger scrolling when the goals (pagination) changes
 
   return (
     <>
@@ -172,10 +176,14 @@ const Index = ({ auth, goals, categories }: PageProps) => {
               </div>
             </div>
           </div>
+
+          {/* Pagination */}
+          <div>
+            <Pagination links={links as LinkType[]}></Pagination>
+          </div>
         </div>
       </MainLayout>
     </>
   );
 };
-
 export default Index;

@@ -17,14 +17,24 @@ class GoalController extends Controller
     public function index()
     {
 
-        $goals = Goal::where('user_id', Auth::id())->get();
+        $goals = Goal::where('user_id', Auth::id())->paginate(6);
 
         // Extract unique categories on the backend
         $categories = $goals->pluck('category')->unique()->values();
 
+        // Format pagination links
+        $formattedLinks = collect($goals->linkCollection()->toArray())->map(function ($link) {
+            return [
+                'url' => $link['url'],
+                'label' => $link['label'],
+                'active' => $link['active'],
+            ];
+        });
+
         return Inertia::render('Goals/Index', [
             'goals' => GoalResource::collection($goals),
             'categories' => $categories,
+            'links' => $formattedLinks, // Pass formatted links to the front end
         ]);
     }
 

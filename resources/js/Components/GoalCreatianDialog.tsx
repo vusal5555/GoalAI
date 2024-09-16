@@ -7,18 +7,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/Components/ui/dialog";
-
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/Components/ui/popover";
-import { Calendar } from "@/Components/ui/calendar";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import { Link, useForm } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 import TextInput from "./TextInput";
 import InputLabel from "./InputLabel";
 import InputError from "./InputError";
@@ -37,6 +28,7 @@ interface GoalFormData {
 }
 
 const GoalCreationDialog: React.FC = () => {
+  const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const { data, setData, post, reset, errors, processing } =
     useForm<GoalFormData>({
@@ -57,12 +49,16 @@ const GoalCreationDialog: React.FC = () => {
 
     data.category = uppercaseFirstLetterLowerCaseTheRest(data.category);
 
-    post(route("goals.store"));
+    post(route("goals.store"), {
+      onSuccess: () => {
+        setOpen(false);
+      },
+    });
     reset();
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" className="w-0">
           <FontAwesomeIcon className="text-xl" icon={faPlus} />
@@ -111,7 +107,7 @@ const GoalCreationDialog: React.FC = () => {
               type="date"
               value={data.due_date}
               name="due_date"
-              className="mt-1 block w-full bg-transparent"
+              className="mt-1 block w-full bg-transparent text-white custom-date-input"
               onChange={(e) => setData("due_date", e.target.value)}
             />
 
