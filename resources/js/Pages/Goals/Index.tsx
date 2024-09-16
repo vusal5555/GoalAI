@@ -36,7 +36,6 @@ const Index = ({ auth, goals, categories, links }: PageProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchTerm, setSearchTerm] = useState<string>("");
 
-  // Filter goals based on selected category and search term
   const filteredGoals = (goals as { data: Goals }).data.filter((goal) => {
     const inCategory =
       selectedCategory === "All" || goal.category === selectedCategory;
@@ -66,6 +65,16 @@ const Index = ({ auth, goals, categories, links }: PageProps) => {
             <div className="w-full md:w-1/4 pr-0 md:pr-6 mb-6 md:mb-0 lg:sticky lg:top-4 lg:h-[calc(100vh-32px)]">
               <h2 className="text-xl font-semibold mb-4">Categories</h2>
               <ul className="space-y-3">
+                <li
+                  className={`cursor-pointer p-2 rounded-md ${
+                    selectedCategory === "All"
+                      ? "bg-blue-500 text-white"
+                      : "bg-primary-foreground text-gray-300"
+                  } hover:bg-blue-600`}
+                  onClick={() => setSelectedCategory("All")}
+                >
+                  All
+                </li>
                 {(categories as string[]).map((category: string) => (
                   <li
                     key={category}
