@@ -33,6 +33,7 @@ const GoalEditionDialog: React.FC<{ id: number }> = ({ id }) => {
   const [open, setOpen] = useState(false);
 
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const { data, setData, put, reset, errors, processing } =
     useForm<GoalFormData>({
       user_id: null,
@@ -43,6 +44,8 @@ const GoalEditionDialog: React.FC<{ id: number }> = ({ id }) => {
       status: "",
       category: "",
     });
+
+  const today = new Date().toISOString().split("T")[0];
 
   const getGoal = () => {
     axios
@@ -134,7 +137,8 @@ const GoalEditionDialog: React.FC<{ id: number }> = ({ id }) => {
               type="date"
               value={data.due_date}
               name="due_date"
-              className="mt-1 block w-full bg-transparent text-white"
+              min={today} // This disables past and current dates
+              className="mt-1 block w-full bg-transparent text-white custom-date-input"
               onChange={(e) => setData("due_date", e.target.value)}
             />
             <InputError message={errors.due_date} className="mt-2" />

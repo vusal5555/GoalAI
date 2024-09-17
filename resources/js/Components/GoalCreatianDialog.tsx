@@ -39,7 +39,8 @@ const GoalCreationDialog: React.FC = () => {
       status: "",
       category: "",
     });
-
+  // Get today's date in 'YYYY-MM-DD' format for the min attribute
+  const today = new Date().toISOString().split("T")[0];
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -107,6 +108,7 @@ const GoalCreationDialog: React.FC = () => {
               type="date"
               value={data.due_date}
               name="due_date"
+              min={today} // This disables past and current dates
               className="mt-1 block w-full bg-transparent text-white custom-date-input"
               onChange={(e) => setData("due_date", e.target.value)}
             />
