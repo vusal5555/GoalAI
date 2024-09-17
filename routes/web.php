@@ -34,6 +34,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('goals/{goal}', [GoalController::class, 'destroy'])->name('goals.destroy');
     Route::get('/roadmaps', [AIRoadmapController::class, 'index'])->name('roadmaps.index');
     Route::get('/resources', [ResourceController::class, 'index'])->name('resources.index');
+    Route::get('/resources/{id}', [ResourceController::class, 'show'])->name('resources.show');
+    Route::post('/resources', [ResourceController::class, 'store'])->name('resources.store');
+    Route::put('/resources/{resource}', [ResourceController::class, 'update'])->name('resources.update');
+    Route::delete('/resources/{resource}', [ResourceController::class, 'destroy'])->name('resources.destroy');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 
 });

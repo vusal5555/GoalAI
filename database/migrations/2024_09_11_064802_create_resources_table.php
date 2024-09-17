@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('resources', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('goal_id')->constrained('goals');
+            $table->string('title');
+            $table->string('description');
+            $table->string('url');
             $table->timestamps();
         });
     }

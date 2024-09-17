@@ -23,4 +23,9 @@ class Goal extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function resources()
+    {
+        return $this->hasMany(Resource::class, 'goal_id');
+    }
 }

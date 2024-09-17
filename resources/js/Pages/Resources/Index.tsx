@@ -1,50 +1,55 @@
+import Pagination, { LinkType } from "@/Components/Pagination";
+import ResourceCreationDialog from "@/Components/ResourceCreationDialog";
+import ResourceEditionDialog from "@/Components/ResourceEditionDialog";
+import { Button } from "@/Components/ui/button";
 import MainLayout from "@/Layouts/MainLayout";
 import { PageProps } from "@/types";
-import { Head } from "@inertiajs/react";
+import { faRemove } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Head, router, usePage } from "@inertiajs/react";
 import { useState } from "react";
 
-// Mock data for resources
-const initialResources = [
-  {
-    id: 1,
-    title: "Beginner's Guide to JavaScript",
-    description: "A comprehensive guide to start learning JavaScript.",
-    category: "Programming",
-    link: "https://example.com/js-guide",
-  },
-  {
-    id: 2,
-    title: "10 Tips for a Healthy Diet",
-    description: "Essential tips to maintain a healthy diet.",
-    category: "Fitness",
-    link: "https://example.com/healthy-diet",
-  },
-  {
-    id: 3,
-    title: "How to Start Meditation",
-    description: "A beginner's guide to meditation.",
-    category: "Mindfulness",
-    link: "https://example.com/meditation",
-  },
-];
+const Index = ({
+  auth,
+  goals,
+  resources,
+  filters,
+  links,
+}: PageProps<{
+  goals: { data: { id: number; title: string }[] };
+  resources: {
+    data: { id: number; title: string; description: string; url: string }[];
+  };
+  filters: { goal_id?: number; search?: string };
+  links: LinkType[]; // Add this line to include the 'links' property
+}>) => {
+  const [selectedGoal, setSelectedGoal] = useState(filters.goal_id || null);
+  const [searchTerm, setSearchTerm] = useState(filters.search || "");
 
-// Mock data for categories
-const categories = ["All", "Programming", "Fitness", "Mindfulness"];
+  // Function to handle goal (category) selection
+  const handleGoalSelect = (goalId: number | null) => {
+    setSelectedGoal(goalId);
+    router.get(
+      route("resources.index"),
+      { goal_id: goalId, search: searchTerm },
+      { preserveState: true }
+    );
+  };
 
-const Index = ({ auth }: PageProps) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [resources, setResources] = useState(initialResources);
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  // Function to handle search input changes
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const searchValue = e.target.value;
+    setSearchTerm(searchValue);
+    router.get(
+      route("resources.index"),
+      { goal_id: selectedGoal, search: searchValue },
+      { preserveState: true }
+    );
+  };
 
-  // Filter resources based on category and search term
-  const filteredResources = resources.filter((resource) => {
-    const inCategory =
-      selectedCategory === "All" || resource.category === selectedCategory;
-    const matchesSearch = resource.title
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    return inCategory && matchesSearch;
-  });
+  const deleteResource = (id: number) => {
+    router.delete(route("resources.destroy", { resource: id }));
+  };
 
   return (
     <>
@@ -52,24 +57,39 @@ const Index = ({ auth }: PageProps) => {
 
       <MainLayout auth={auth}>
         <div className="min-h-screen bg-transparent border shadow-lg shadow-gray-200/30 rounded-md text-white p-6">
-          <h1 className="text-3xl font-bold mb-4">Resources</h1>
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <h1 className="text-3xl font-bold mb-4">Resources</h1>
+            <div>
+              <ResourceCreationDialog goals={goals}></ResourceCreationDialog>
+            </div>
+          </div>
 
           <div className="flex flex-col md:flex-row">
-            {/* Left Sidebar for Categories */}
+            {/* Left Sidebar for Goals (acts as categories) */}
             <div className="w-full md:w-1/4 pr-0 md:pr-6 mb-6 md:mb-0 lg:sticky lg:top-4 lg:h-[calc(100vh-32px)]">
-              <h2 className="text-xl font-semibold mb-4">Categories</h2>
+              <h2 className="text-xl font-semibold mb-4">Goals</h2>
               <ul className="space-y-3">
-                {categories.map((category) => (
+                <li
+                  className={`cursor-pointer p-2 rounded-md ${
+                    selectedGoal === null
+                      ? "bg-blue-500 text-white"
+                      : "bg-primary-foreground text-gray-300"
+                  } hover:bg-blue-600`}
+                  onClick={() => handleGoalSelect(null)}
+                >
+                  All
+                </li>
+                {goals.data.map((goal) => (
                   <li
-                    key={category}
+                    key={goal.id}
                     className={`cursor-pointer p-2 rounded-md ${
-                      selectedCategory === category
+                      selectedGoal === goal.id
                         ? "bg-blue-500 text-white"
                         : "bg-primary-foreground text-gray-300"
                     } hover:bg-blue-600`}
-                    onClick={() => setSelectedCategory(category)}
+                    onClick={() => handleGoalSelect(goal.id)}
                   >
-                    {category}
+                    {goal.title}
                   </li>
                 ))}
               </ul>
@@ -82,28 +102,48 @@ const Index = ({ auth }: PageProps) => {
                 <input
                   type="text"
                   className="p-3 w-full rounded-md bg-primary-foreground text-white focus:outline-none"
-                  placeholder="Search resources..."
+                  placeholder="Search resources by name..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={handleSearchChange}
                 />
               </div>
 
               {/* Resource Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {filteredResources.length > 0 ? (
-                  filteredResources.map((resource) => (
+                {resources.data.length > 0 ? (
+                  resources.data.map((resource) => (
                     <div
                       key={resource.id}
                       className="bg-primary-foreground p-4 rounded-md border shadow-md"
                     >
-                      <h3 className="text-xl font-semibold text-white">
-                        {resource.title}
-                      </h3>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-xl font-semibold text-white">
+                          {resource.title}
+                        </h3>
+
+                        <div>
+                          <ResourceEditionDialog
+                            id={resource.id}
+                            goals={goals}
+                          ></ResourceEditionDialog>
+                          <Button
+                            variant="ghost"
+                            onClick={() => deleteResource(resource.id)}
+                            className="p-0"
+                          >
+                            <FontAwesomeIcon
+                              className="text-xl"
+                              icon={faRemove}
+                            ></FontAwesomeIcon>
+                          </Button>
+                        </div>
+                      </div>
+
                       <p className="text-sm text-gray-400">
                         {resource.description}
                       </p>
                       <a
-                        href={resource.link}
+                        href={resource.url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-400 hover:underline mt-2 inline-block"
@@ -118,10 +158,13 @@ const Index = ({ auth }: PageProps) => {
               </div>
             </div>
           </div>
+
+          <div>
+            <Pagination links={links}></Pagination>
+          </div>
         </div>
       </MainLayout>
     </>
   );
 };
-
 export default Index;
