@@ -19,7 +19,7 @@ const MainLayout = ({ children, auth }: MyLayoutProps) => {
           <Header auth={auth}></Header>
 
           <main className="w-full">
-            <div className="pt-20 lg:pt-32 pb-10 px-4">{children}</div>
+            <div className="pt-10 pb-10 px-4">{children}</div>
           </main>
         </div>
       </div>

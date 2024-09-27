@@ -91,8 +91,8 @@ const ResourceEditionDialog: React.FC<{
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader className="flex flex-col">
-          <DialogTitle>Add Resource</DialogTitle>
-          <DialogDescription>Create your resource here!</DialogDescription>
+          <DialogTitle>Edit Resource</DialogTitle>
+          <DialogDescription>Edit your resource here!</DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit}>
           <div className="mt-4">

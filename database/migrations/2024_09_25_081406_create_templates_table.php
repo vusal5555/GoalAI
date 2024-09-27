@@ -11,8 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('a_i_roadmaps', function (Blueprint $table) {
+        Schema::create('templates', function (Blueprint $table) {
             $table->id();
+
+            // Foreign key to the goals table
+            $table->foreignId('goal_id')->constrained('goals')->onDelete('cascade');
+
+            // Template content
+            $table->text('content');
+
+            // Timestamps
             $table->timestamps();
         });
     }
@@ -22,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('a_i_roadmaps');
+        Schema::dropIfExists('templates');
     }
 };

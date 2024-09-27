@@ -28,4 +28,14 @@ class Goal extends Model
     {
         return $this->hasMany(Resource::class, 'goal_id');
     }
+
+    public function template()
+    {
+        return $this->hasOne(Template::class, 'goal_id');
+    }
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class, 'goal_id');
+    }
 }

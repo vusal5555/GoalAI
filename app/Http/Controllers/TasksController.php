@@ -2,18 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AIRoadmap;
+use App\Models\Task;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 
-class AIRoadmapController extends Controller
+class TasksController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return Inertia::render('AIRoadmap/Index');
+
     }
 
     /**
@@ -35,7 +34,7 @@ class AIRoadmapController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(AIRoadmap $aIRoadmap)
+    public function show(Task $task)
     {
         //
     }
@@ -43,7 +42,7 @@ class AIRoadmapController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(AIRoadmap $aIRoadmap)
+    public function edit(Task $task)
     {
         //
     }
@@ -51,7 +50,7 @@ class AIRoadmapController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, AIRoadmap $aIRoadmap)
+    public function update(Request $request, $task)
     {
         //
     }
@@ -59,7 +58,7 @@ class AIRoadmapController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(AIRoadmap $aIRoadmap)
+    public function destroy(Task $task)
     {
         //
     }

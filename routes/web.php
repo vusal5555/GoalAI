@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Controllers\AIRoadmapController;
+use App\Http\Controllers\AIController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
@@ -18,9 +19,11 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Route::get('/dashboard', function () {
+//     return Inertia::render('Dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/generate-roadmap', [AIController::class, 'generateRoadmapLmmaGet'])->name('generate-roadmap');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -32,13 +35,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/goals/{id}', [GoalController::class, 'show'])->name('goals.show');
     Route::put('goals/{goal}', [GoalController::class, 'update'])->name('goals.update');
     Route::delete('goals/{goal}', [GoalController::class, 'destroy'])->name('goals.destroy');
-    Route::get('/roadmaps', [AIRoadmapController::class, 'index'])->name('roadmaps.index');
+    Route::get('/ai-mentor', [AIController::class, 'index'])->name('aimentor.index');
+    Route::get('/ai-mentor-guidance', [AIController::class, 'generateMentorResponse'])->name('aimentor.generateMentorResponse');
     Route::get('/resources', [ResourceController::class, 'index'])->name('resources.index');
     Route::get('/resources/{id}', [ResourceController::class, 'show'])->name('resources.show');
     Route::post('/resources', [ResourceController::class, 'store'])->name('resources.store');
     Route::put('/resources/{resource}', [ResourceController::class, 'update'])->name('resources.update');
     Route::delete('/resources/{resource}', [ResourceController::class, 'destroy'])->name('resources.destroy');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/chat/message', [ChatController::class, 'handleMessage']);
+    Route::post('/chat/save-content', [ChatController::class, 'saveContent']);
 
 });
 

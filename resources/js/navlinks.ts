@@ -13,32 +13,20 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 const navLinks = [
-  {
-    name: "Dashboard",
-    path: "/dashboard",
-    icon: faDashboard, // You can use actual icon components or class names
-  },
+  // {
+  //   name: "Dashboard",
+  //   path: "/dashboard",
+  //   icon: faDashboard, // You can use actual icon components or class names
+  // },
   {
     name: "Goals",
     path: "/goals",
     icon: faBullseye,
   },
   {
-    name: "AI Roadmaps",
-    path: "/roadmaps",
+    name: "AI Mentor",
+    path: "/ai-mentor",
     icon: faMapLocationDot,
-    subLinks: [
-      {
-        name: "Generate Roadmap",
-        path: "/roadmaps/generate",
-        icon: faPlus,
-      },
-      {
-        name: "View Roadmaps",
-        path: "/roadmaps/list",
-        icon: faMap,
-      },
-    ],
   },
   {
     name: "Resources",
