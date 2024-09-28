@@ -10,150 +10,6 @@ use Illuminate\Support\Facades\Http;
 
 class ChatController extends Controller
 {
-    // public function handleMessage(Request $request)
-    // {
-    //     $user = Auth::user();
-    //     $goalId = $request->input('goal_id');
-    //     $message = $request->input('message');
-    //     $conversation = $request->input('conversation');
-
-    //     // Validate inputs
-    //     $request->validate([
-    //         'goal_id' => 'required|exists:goals,id',
-    //         'message' => 'required|string',
-    //         'conversation' => 'required|array',
-    //     ]);
-
-    //     $goal = Goal::where('id', $goalId)->where('user_id', $user->id)->firstOrFail();
-
-    //     $systemPrompt = "You are an AI mentor assisting a user with their goal: '{$goal->title}'.
-
-    //         Your tasks are:
-    //         1. Begin by greeting the user and acknowledging the selected goal.
-    //         2. Ask any clarifying questions to better understand their goal.
-    //         3. Once the user indicates they have no more clarifications, inform them that you can generate tasks, a template, and resources to help them achieve their goal.
-    //         4. Ask the user if they would like you to proceed with generating this content.
-    //         5. If the user agrees, generate the content and present it in a user-friendly format using Markdown. Use headings (`#`, `##`), bold text (`**bold**`), numbered lists, and bullet points to structure the information.
-
-    //         Example format:
-
-    //         **Tasks**:
-    //         1. Task 1
-    //         2. Task 2
-
-    //         **Template**:
-    //         Your action plan template here.
-
-    //         **Resources**:
-    //         - **Title**: Resource Title
-    //         **Description**: Resource Description
-    //         **URL**: Resource URL
-
-    //         6. After presenting the content, ask the user if they would like to make any specific changes to the tasks, template, or resources.
-    //         7. If the user requests changes, update the content accordingly and present the updated version.
-    //         8. Once the user is satisfied, internally call the function `save_generated_content` with the final version of the content. Do not mention the function call to the user.
-    //         9. Do not include any JSON or code blocks in your messages to the user. Keep the conversation natural and friendly.
-
-    //         Remember to keep the conversation interactive and only share user-friendly messages with the user.";
-
-    //     $functions = [
-    //         [
-    //             'name' => 'save_generated_content',
-    //             'description' => 'Saves the generated tasks, template, and resources.',
-    //             'parameters' => [
-    //                 'type' => 'object',
-    //                 'properties' => [
-    //                     'tasks' => [
-    //                         'type' => 'array',
-    //                         'items' => ['type' => 'string'],
-    //                         'description' => 'A list of tasks.',
-    //                     ],
-    //                     'template' => [
-    //                         'type' => 'string',
-    //                         'description' => 'The action plan template.',
-    //                     ],
-    //                     'resources' => [
-    //                         'type' => 'array',
-    //                         'items' => [
-    //                             'type' => 'object',
-    //                             'properties' => [
-    //                                 'title' => ['type' => 'string'],
-    //                                 'description' => ['type' => 'string'],
-    //                                 'url' => ['type' => 'string'],
-    //                             ],
-    //                         ],
-    //                         'description' => 'A list of resources.',
-    //                     ],
-    //                 ],
-    //                 'required' => ['tasks', 'template', 'resources'],
-    //             ],
-    //         ],
-    //     ];
-
-    //     // Prepare the messages for OpenAI API
-    //     $messages = [];
-
-    //     // System prompt with goal information
-    //     $messages[] = [
-    //         'role' => 'system',
-    //         'content' => $systemPrompt,
-    //     ];
-
-    //     // Add conversation history
-    //     foreach ($conversation as $convMessage) {
-    //         $messages[] = [
-    //             'role' => $convMessage['sender'] === 'user' ? 'user' : 'assistant',
-    //             'content' => $convMessage['content'],
-    //         ];
-    //     }
-
-    //     $response = OpenAI::chat()->create([
-    //         'model' => 'gpt-4', // Use a model that supports function calling
-    //         'messages' => $messages,
-    //         'functions' => $functions,
-    //         'temperature' => 0.7,
-    //     ]);
-
-    //     $choices = $response['choices'][0];
-
-    //     if (isset($choices['message']['function_call'])) {
-    //         // The AI has called a function
-    //         $functionCall = $choices['message']['function_call'];
-    //         $functionName = $functionCall['name'];
-    //         $arguments = json_decode($functionCall['arguments'], true);
-
-    //         if ($functionName === 'save_generated_content') {
-    //             // Store the generated content for saving later
-    //             $this->storeGeneratedContent($user->id, $goal->id, $arguments);
-
-    //             // Send a message to the user confirming that the content is ready to be saved
-    //             $aiMessage = "I've prepared the content for you. Would you like to save it to your database?";
-    //             $contentGenerated = true;
-    //         } else {
-    //             $aiMessage = "Sorry, I didn't understand that. Could you please clarify?";
-    //             $contentGenerated = false;
-    //         }
-    //     } else {
-    //         // Regular AI message
-    //         $aiMessage = $choices['message']['content'];
-
-    //         // Check if the AI's message contains generated content
-    //         if ($this->detectGeneratedContent($aiMessage)) {
-    //             // Store generated content if present
-    //             $this->storeGeneratedContent($user->id, $goal->id, $aiMessage);
-    //             // Remove JSON content from the message before sending it to the frontend
-    //             $aiMessage = $this->removeJsonContent($aiMessage);
-    //             $contentGenerated = true;
-    //         } else {
-    //             $contentGenerated = false;
-    //         }
-    //     }
-
-    //     return response()->json([
-    //         'message' => $aiMessage,
-    //         'contentGenerated' => $contentGenerated,
-    //     ]);
-    // }
 
     public function handleMessage(Request $request)
     {
@@ -174,64 +30,75 @@ class ChatController extends Controller
         // System prompt and functions as before
         $systemPrompt = "You are an AI mentor assisting a user with their goal: '{$goal->title}'.
 
-    Your tasks are:
-    1. Begin by greeting the user and acknowledging the selected goal.
-    2. Ask any clarifying questions to better understand their goal.
-    3. Once the user indicates they have no more clarifications, inform them that you can generate tasks, a template, and resources to help them achieve their goal.
-    4. Ask the user if they would like you to proceed with generating this content.
-    5. If the user agrees, generate the content and present it in a user-friendly format using Markdown. Use headings (`#`, `##`), bold text (`**bold**`), numbered lists, and bullet points to structure the information.
+        Your tasks are:
 
-    Example format:
+        1. Greet the user and acknowledge their selected goal and its description: '{$goal->description}'.
 
-    **Tasks**:
-    1. Task 1
-    2. Task 2
+        2. Ask any clarifying questions to better understand their goal.
 
-    **Template**:
-    Your action plan template here.
+        3. Once the user indicates they have no more clarifications, inform them that you can generate tasks, a template, and resources to help them achieve their goal.
 
-    **Resources**:
-    - **Title**: Resource Title
-    **Description**: Resource Description
-    **URL**: Resource URL
+        4. Ask the user if they would like to see the content and if they agree, show it to them in the chat.
 
-    6. After presenting the content, ask the user if they would like to make any specific changes to the tasks, template, or resources.
-    7. If the user requests changes, update the content accordingly and present the updated version.
-    8. Once the user is satisfied, internally call the function `save_generated_content` with the final version of the content. Do not mention the function call to the user.
-    9. Do not include any JSON or code blocks in your messages to the user. Keep the conversation natural and friendly.
+        5. Ask the user if they would like you to proceed with generating this content.
 
-    Remember to keep the conversation interactive and only share user-friendly messages with the user.";
+        6. **If the user agrees, generate the content and present it to the user in a user-friendly format using Markdown. Do not proceed to any other steps until the user has presented the content to the user.
 
-        $functions = [
+           Example format:
+
+           # Tasks
+           1. Task 1
+           2. Task 2
+
+           # Template
+           Your action plan template here.
+
+           # Resources
+           - **Title**: Resource Title
+             **Description**: Resource Description
+             **URL**: Resource URL
+
+        7. After presenting the content, ask the user if they would like to make any specific changes to the tasks, template, or resources.
+        8. If the user requests changes, update the content accordingly and present the updated version.
+        9. **Once the user is satisfied with the content, silently use the 'save_generated_content' tool with the final version of the content. Do not mention the tool use to the user.**
+        10. Confirm with the user that the content has been saved and ask if they need any further assistance.
+        11. Do not include any JSON or code blocks in your messages to the user. Keep the conversation natural and friendly.
+
+        Remember to keep the conversation interactive and only share user-friendly messages with the user.";
+
+        $tools = [
             [
-                'name' => 'save_generated_content',
-                'description' => 'Saves the generated tasks, template, and resources.',
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'tasks' => [
-                            'type' => 'array',
-                            'items' => ['type' => 'string'],
-                            'description' => 'A list of tasks.',
-                        ],
-                        'template' => [
-                            'type' => 'string',
-                            'description' => 'The action plan template.',
-                        ],
-                        'resources' => [
-                            'type' => 'array',
-                            'items' => [
-                                'type' => 'object',
-                                'properties' => [
-                                    'title' => ['type' => 'string'],
-                                    'description' => ['type' => 'string'],
-                                    'url' => ['type' => 'string'],
-                                ],
+                'type' => 'function',
+                'function' => [
+                    'name' => 'save_generated_content',
+                    'description' => 'Saves the generated tasks, template, and resources.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'tasks' => [
+                                'type' => 'array',
+                                'items' => ['type' => 'string'],
+                                'description' => 'A list of tasks.',
                             ],
-                            'description' => 'A list of resources.',
+                            'template' => [
+                                'type' => 'string',
+                                'description' => 'The action plan template.',
+                            ],
+                            'resources' => [
+                                'type' => 'array',
+                                'items' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'title' => ['type' => 'string'],
+                                        'description' => ['type' => 'string'],
+                                        'url' => ['type' => 'string'],
+                                    ],
+                                ],
+                                'description' => 'A list of resources.',
+                            ],
                         ],
+                        'required' => ['tasks', 'template', 'resources'],
                     ],
-                    'required' => ['tasks', 'template', 'resources'],
                 ],
             ],
         ];
@@ -255,64 +122,66 @@ class ChatController extends Controller
 
         // Make the HTTP POST request to the GROQ API
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . env('GROG_API_KEY'),
+            'Authorization' => 'Bearer ' . env('GROQ_API_KEY'),
             'Content-Type' => 'application/json',
         ])->post('https://api.groq.com/openai/v1/chat/completions', [
-            'model' => 'llama3-8b-8192', // Replace with the appropriate model
+            'model' => 'llama3-groq-70b-8192-tool-use-preview', // Use a model that supports Tool Use
             'messages' => $messages,
-            'functions' => $functions,
+            'tools' => $tools, // Include tools instead of functions
+            'tool_choice' => 'auto', // Allow the model to decide when to use tools
             'temperature' => 0.7,
         ]);
 
-        // Handle the response
+        //Handle the response
         if ($response->successful()) {
             $data = $response->json();
 
             $choices = $data['choices'][0];
 
-            if (isset($choices['message']['function_call'])) {
-                // The AI has called a function
-                $functionCall = $choices['message']['function_call'];
-                $functionName = $functionCall['name'];
-                $arguments = json_decode($functionCall['arguments'], true);
+            if (isset($choices['message']['tool_calls'])) {
+                // The AI has called one or more tools
+                $toolCalls = $choices['message']['tool_calls'];
 
-                if ($functionName === 'save_generated_content') {
-                    // Store the generated content for saving later
-                    $this->storeGeneratedContent($user->id, $goal->id, $arguments);
+                foreach ($toolCalls as $toolCall) {
+                    $functionName = $toolCall['function']['name'];
+                    $arguments = json_decode($toolCall['function']['arguments'], true);
 
-                    // Send a message to the user confirming that the content is ready to be saved
-                    $aiMessage = "I've prepared the content for you. Would you like to save it to your database?";
-                    $contentGenerated = true;
-                } else {
-                    $aiMessage = "Sorry, I didn't understand that. Could you please clarify?";
-                    $contentGenerated = false;
+                    if ($functionName === 'save_generated_content') {
+                        // Store the generated content
+                        $this->storeGeneratedContent($user->id, $goal->id, $arguments);
+
+                        // Send a message to the user confirming that the content is ready to be saved
+                        $aiMessage = "I've prepared the content for you. Would you like to save it to your database?";
+                        $contentGenerated = true;
+                    } else {
+                        $aiMessage = "Sorry, I didn't understand that. Could you please clarify?";
+                        $contentGenerated = false;
+                    }
+
+                    // Append the tool call and response to the conversation
+                    $messages[] = [
+                        'role' => 'tool',
+                        'content' => json_encode($arguments),
+                        'tool_call_id' => $toolCall['id'],
+                    ];
                 }
             } else {
                 // Regular AI message
                 $aiMessage = $choices['message']['content'];
-
-                // Check if the AI's message contains generated content
-                if ($this->detectGeneratedContent($aiMessage)) {
-                    // Store generated content if present
-                    $this->storeGeneratedContent($user->id, $goal->id, $aiMessage);
-                    // Remove JSON content from the message before sending it to the frontend
-                    $aiMessage = $this->removeJsonContent($aiMessage);
-                    $contentGenerated = true;
-                } else {
-                    $contentGenerated = false;
-                }
+                $contentGenerated = false;
             }
 
+            // Return the response to the frontend
             return response()->json([
                 'message' => $aiMessage,
                 'contentGenerated' => $contentGenerated,
             ]);
-
         } else {
             // Handle errors
             \Log::error('GROQ API Error:', ['status' => $response->status(), 'body' => $response->body()]);
             return response()->json(['error' => 'AI service is currently unavailable. Please try again later.'], 500);
         }
+
     }
 
     public function saveContent(Request $request)

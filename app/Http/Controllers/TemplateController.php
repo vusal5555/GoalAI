@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Template;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class TemplateController extends Controller
 {
@@ -12,7 +13,7 @@ class TemplateController extends Controller
      */
     public function index()
     {
-        //
+        return Inertia::render('Template/index', );
     }
 
     /**

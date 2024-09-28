@@ -6,6 +6,7 @@ use App\Http\Controllers\GoalController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\TemplateController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -45,6 +46,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/chat/message', [ChatController::class, 'handleMessage']);
     Route::post('/chat/save-content', [ChatController::class, 'saveContent']);
+    Route::get('/templates', [TemplateController::class, 'index'])->name('templates.index');
 
 });
 

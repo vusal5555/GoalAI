@@ -29,6 +29,11 @@ const navLinks = [
     icon: faMapLocationDot,
   },
   {
+    name: "Templates",
+    path: "/templates",
+    icon: faMap,
+  },
+  {
     name: "Resources",
     path: "/resources",
     icon: faBook,
